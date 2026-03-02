@@ -1,0 +1,5 @@
+# 2D pose of x, y and theta of the goal in map frame
+float32[] goal_pose
+---
+bool is_ok
+string error_msg

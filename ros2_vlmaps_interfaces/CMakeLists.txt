@@ -1,0 +1,54 @@
+# SPDX-FileCopyrightText: 2024 Humanoid Sensing and Perception, Istituto Italiano di Tecnologia
+# SPDX-License-Identifier: BSD-3-Clause
+# Author: Simone Micheletti
+
+cmake_minimum_required(VERSION 3.8)
+set (CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+project(ros2_vlmaps_interfaces)
+
+find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
+# find dependencies
+find_package(ament_cmake REQUIRED)
+# uncomment the following section in order to fill in
+# further dependencies manually.
+# find_package(<dependency> REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+rosidl_generate_interfaces(${PROJECT_NAME}
+                            "msg/VoxelObject.msg"
+                            "msg/ObjectQueryResult.msg"
+                            "msg/Color.msg"
+                            "srv/LoadMap.srv"
+                            "srv/IndexMap.srv"
+                            "srv/EnableMapping.srv"
+                            "srv/ShowMap.srv"
+                            "srv/LlmQuery.srv"
+                            "srv/LlmChat.srv"
+                            "srv/PublishGoal.srv"
+                            "srv/CameraRGB.srv"
+                            "srv/EvaluateMap.srv"
+                            DEPENDENCIES sensor_msgs geometry_msgs
+                            LIBRARY_NAME ${PROJECT_NAME}
+)
+
+
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  # the following line skips the linter which checks for copyrights
+  # comment the line when a copyright and license is added to all source files
+  set(ament_cmake_copyright_FOUND TRUE)
+  # the following line skips cpplint (only works in a git repo)
+  # comment the line when this package is in a git repo and when
+  # a copyright and license is added to all source files
+  set(ament_cmake_cpplint_FOUND TRUE)
+  ament_lint_auto_find_test_dependencies()
+endif()
+
+ament_package()

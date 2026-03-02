@@ -1,0 +1,122 @@
+# SPDX-FileCopyrightText: 2024 Humanoid Sensing and Perception, Istituto Italiano di Tecnologia
+# SPDX-License-Identifier: BSD-3-Clause
+# Author: Simone Micheletti
+
+FROM nvidia/cuda:12.8.0-devel-ubuntu24.04
+
+ARG RELEASE
+ARG LAUNCHPAD_BUILD_ARCH
+ENV USER=user1
+ARG PASSWORD=user1
+SHELL ["/bin/bash", "-c"]
+RUN ln -fs /usr/share/zoneinfo/Europe/Rome /etc/localtime && \
+    apt update &&\
+    apt install --no-install-recommends -y -qq sudo git cmake && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN addgroup ${USER} \
+    && useradd -ms /bin/bash ${USER} -g ${USER} \
+    && echo "${USER}:${PASSWORD}" | chpasswd \
+    && usermod -a -G sudo ${USER} \
+    && sed -i.bak -e 's/%sudo\s\+ALL=(ALL\(:ALL\)\?)\s\+ALL/%sudo ALL=NOPASSWD:ALL/g' /etc/sudoers
+
+USER ${USER}
+WORKDIR /home/${USER}
+
+RUN sudo apt update && DEBIAN_FRONTEND=noninteractive sudo apt install ffmpeg libsm6 libxext6 -y
+
+# ROS2 Install
+ENV ROS_DISTRO=jazzy
+RUN sudo apt update && sudo apt install -y locales && sudo locale-gen en_US en_US.UTF-8 \
+    && sudo update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 \
+    && export LANG=en_US.UTF-8
+    
+RUN sudo apt install software-properties-common -y\
+    && sudo add-apt-repository universe \
+    && sudo apt update && sudo apt install curl -y
+
+RUN export ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | grep -F "tag_name" | awk -F\" '{print $4}') && \
+    curl -L -o /tmp/ros2-apt-source.deb "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.$(. /etc/os-release && echo $VERSION_CODENAME)_all.deb" && \
+    sudo apt install /tmp/ros2-apt-source.deb
+
+RUN sudo apt update && sudo apt install ros-$ROS_DISTRO-ros-base \
+    ros-$ROS_DISTRO-sensor-msgs ros-$ROS_DISTRO-geometry-msgs \
+    ros-$ROS_DISTRO-action-msgs ros-$ROS_DISTRO-actionlib-msgs ros-$ROS_DISTRO-nav2-rviz-plugins \
+    ros-$ROS_DISTRO-nav2-msgs ros-$ROS_DISTRO-nav2-simple-commander ros-$ROS_DISTRO-rviz2 ros-dev-tools -y
+
+RUN sudo apt update && sudo apt install ros-$ROS_DISTRO-rmw-cyclonedds-cpp -y
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+
+RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /home/${USER}/.bashrc
+
+# VS code
+RUN wget -O- https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor | sudo tee /usr/share/keyrings/vscode.gpg && \
+    echo deb [arch=amd64 signed-by=/usr/share/keyrings/vscode.gpg] https://packages.microsoft.com/repos/vscode stable main | sudo tee /etc/apt/sources.list.d/vscode.list
+RUN sudo apt update && sudo apt install -y code
+# Install VisualStudio Code extensions
+RUN code --install-extension ms-vscode.cpptools \
+		--install-extension ms-vscode.cpptools-themes \
+		--install-extension ms-vscode.cmake-tools \
+                --install-extension ms-python.python \
+                --install-extension eamodio.gitlens
+
+# Git Setup
+ARG GIT_USERNAME
+ARG GIT_USER_EMAIL
+ARG GIT_TOKEN
+RUN git config --global user.name ${GIT_USERNAME} && git config --global user.email ${GIT_USER_EMAIL}
+# Installing visual-language-navigation
+RUN git clone https://${GIT_TOKEN}@github.com/hsp-iit/visual-language-navigation
+RUN sudo apt update && sudo apt install -y python3-pip
+# Manually install requirements
+RUN pip3 install hydra-core gdown openai-clip torch torchvision h5py timm pyvisgraph pytorch_lightning odfpy --break-system-packages
+RUN echo "export PYTHONPATH=$PYTHONPATH:/home/${USER}/visual-language-navigation" >> /home/${USER}/.bashrc
+RUN pip3 install opencv-python matplotlib open3d "numpy >= 2" --break-system-packages
+# Env Setup
+ENV PYTHONPATH=$"${PYTHONPATH}:/home/${USER}/visual-language-navigation"
+RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /home/${USER}/.bashrc
+
+# Clip backbone
+RUN wget https://openaipublic.azureedge.net/clip/models/40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af/ViT-B-32.pt && \
+    mkdir ~/.cache/clip && mv ViT-B-32.pt ~/.cache/clip/ViT-B-32.pt
+
+# Ros2 interfaces and checkpoints setup
+RUN cd visual-language-navigation && git pull && cd visual_language_navigation/lseg && mkdir checkpoints && cd && \
+    cd visual-language-navigation/ros2_vlmaps_interfaces && source /opt/ros/${ROS_DISTRO}/setup.bash && colcon build --symlink-install --cmake-args -DCMAKE_CXX_FLAGS=-w && \
+    echo "source /home/${USER}/visual-language-navigation/ros2_vlmaps_interfaces/install/local_setup.bash" >> /home/${USER}/.bashrc
+# Set LSeg checkpoints
+RUN cd visual-language-navigation/docker && python3 download_checkpoint.py
+# Hugging Face Model
+RUN cd visual-language-navigation/docker && python3 download_hf_model.py
+RUN python3 download_hf_model.py
+RUN pip3 install transformers openai flask_socketio --break-system-packages
+RUN mkdir ~/.cache/huggingface/transformers && \
+    cd ~/.cache/huggingface/transformers && \
+    wget https://huggingface.co/openai/clip-vit-base-patch32/resolve/main/pytorch_model.bin && \
+    wget https://huggingface.co/openai/clip-vit-base-patch32/resolve/main/tokenizer_config.json && \
+    wget https://huggingface.co/openai/clip-vit-base-patch32/resolve/main/vocab.json && \
+    wget https://huggingface.co/openai/clip-vit-base-patch32/resolve/main/merges.txt && \
+    wget https://huggingface.co/openai/clip-vit-base-patch32/resolve/main/special_tokens_map.json && \
+    wget https://huggingface.co/openai/clip-vit-base-patch32/resolve/main/tokenizer.json && \
+    wget https://huggingface.co/openai/clip-vit-base-patch32/resolve/main/special_tokens_map.json
+
+# FCCLIP
+# Detectron2 requirement
+RUN pip3 install 'git+https://github.com/facebookresearch/detectron2.git' --break-system-packages
+# FC-CLIP requirements
+RUN cd visual-language-navigation/visual_language_navigation/fcclip && \
+    pip3 install -r requirements.txt --break-system-packages
+# Build CUDA kernel for MSDeformAttn
+ENV TORCH_CUDA_ARCH_LIST="8.6"
+ENV FORCE_CUDA="1"
+RUN cd visual-language-navigation/visual_language_navigation/fcclip/fcclip/modeling/pixel_decoder/ops && \
+    pip3 install . --user --break-system-packages
+# FCCLIP weights and configs
+RUN cd visual-language-navigation/docker && export FORCE_CUDA="1" && export TORCH_CUDA_ARCH_LIST="8.6" && \
+    python3 download_fcclip_clip_weights.py
+RUN cd visual-language-navigation/docker && \
+    python3 download_cocopan_checkpoint.py
+
+# Cleanup
+RUN sudo apt update && sudo apt install -y iproute2 unzip terminator bash-completion gedit locate 
+CMD ["bash", "-c"]

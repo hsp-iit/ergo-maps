@@ -1,0 +1,48 @@
+semantic_map_server:
+  ros__parameters:
+    costmap_topic_name: /global_costmap/costmap
+    footprint_topic_name: /global_costmap/published_footprint
+    map_indexing_result_topic: /vlmap_2d_index_marker
+    map_indexing_goal_topic: /vlmap_goal_indexing
+    map_pointcloud_topic: /voxmap
+    voxmap_index_result: /map_index_result
+    cell_size: 0.02
+    grid_size: 1500
+    map_save_dir: /home/user1
+    map_name: semantic_map.h5df
+    semantic_map_frame: vlmap
+    dbscan_eps: 5.0
+    dbscan_min_samples: 10
+    occupied_threshold: 40.0
+    costmap_goal_window: 5
+    costmap_floor_height: 0.2
+    costmap_dilation: 3
+    cossim_threshold: 0.92 #0.9    #0.85 ergocub
+    use_cosine_sim: True
+    color_palette_size: 4
+    seg_model_name: fcclip  # fcclip or lseg (default)
+    labels: ["other", "screen", "table"
+                ,"closet"
+                ,"chair"
+                ,"shelf"
+                ,"door"
+                ,"wall"
+                ,"ceiling"
+                ,"floor"
+                ,"human"]
+    dbscan:
+      "0":
+        eps: 2.0
+        min_samples: 10
+      "1":
+        eps: 5.0
+        min_samples: 80
+      "2":
+        eps: 10.0
+        min_samples: 200
+      "3":
+        eps: 10.0
+        min_samples: 300
+      default:
+        eps: 5.0
+        min_samples: 50

@@ -1,0 +1,13 @@
+string[] object_string
+# object_size is a string enum for the size category of the object:
+# 0: small object
+# 1: medium object
+# 2: big object
+# 3: very big object
+# Based on the number of objects we will have the same amount of object_size number strings
+string object_size
+---
+bool is_ok
+float32[] robot_pose
+ObjectQueryResult[] objects_poses
+string error_msg

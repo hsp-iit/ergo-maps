@@ -1,0 +1,6 @@
+string indexing_string
+---
+geometry_msgs/Point[] pointcloud
+geometry_msgs/Point[] map_pc
+bool is_ok
+string error_msg

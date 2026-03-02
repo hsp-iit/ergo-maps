@@ -1,0 +1,132 @@
+semantic_map_builder:
+  ros__parameters:
+    # Topics
+    img_topic_name: "/camera/rgbd/img"
+    depth_topic_name: "/camera/rgbd/depth"
+    camera_info_topic: "/camera/rgbd/camera_info"
+    use_camera_info_topic: true
+    amcl_pose_topic: "/amcl_pose"
+    voxmap_index_result: "/map_index_result"
+    map_pointcloud_topic: "/voxmap"
+    costmap_topic_name: "/global_costmap/costmap"
+    map_indexing_result_topic: "/map_2d_index_marker"
+    map_indexing_goal_topic: "/map_goal_indexing"
+
+
+    # Map configuration
+    map_save_dir: "/home/user1"   # directory to where to save the map
+    map_name: "semantic_map.h5df" # map name of the map to be loaded. If not present, a new one will be created with that name.
+    cell_size: 0.02               # voxel size of the map cell (meters)
+    grid_size: 1500               # number of voxels along one axis of the map: gird_size x grid_size
+    maximum_height: 2.3           # maximum height of the map
+    max_camera_distance: 3.0      # maximum camera distance. Will be considered for mapping only the points below this threshold.
+    depth_downsampling: 10        # integer number that divides the number of points of the pointcloud
+
+    # Frames
+    target_frame: "map"           # global frame name of the map in the navigation stack. It's the reference frame where to express the map.
+    semantic_map_frame: "vlmap"   # semantic map frame name: used to convert between the semantic map grid to the global navigation map
+    robot_base_frame: "geometric_unicycle"   # base frame of the robot: mobile_base_body_link for R1, geometric_unicycle for ergoCub
+
+
+    # Raycasting parameters
+    use_raycasting: true            # if true enables raycasting: it removes already seen voxels if we see something behind it on a later view
+    use_all_depth_for_raycast: true # if true uses all the rays of the depth for a more efficient voxel clearing at cost of more GPU or time usage
+    voxel_offset: 0                 # number of voxels, from the current camera pointcloud, to stop clearing before map voxels
+    raycast_distance_threshold: 0.5 # distance of a voxel center (in voxel unit size) from the cast ray to consider the voxel to be marked for removal
+    raycast_camera_batch_size: 2048    # 2**11  # batch size for GPU computation for the camera cloud
+    raycast_map_batch_size: 1024       # 2**10  # batch size for GPU computation for the map cloud
+
+    # AMCL / localization
+    amcl_cov_threshold: 0.04        # Covariance threshold below we consider the robot well localized and we start mapping
+
+    # Segmentation
+    seg_model_name: "fcclip"      # options: "fcclip" or "lseg" semantic segmentation model
+    classes_to_skip:              # classes to avoid mapping
+      - "person"
+      - "floor"
+      - "ceiling"
+      - "wall"
+    use_feature_fusion: false         # fuses the later semantic embeddings on the same voxel, using: ConceptFusion https://arxiv.org/pdf/2302.07241.pdf Sec. 4.1, Feature fusion
+    lseg_use_cosine_sim: true         # LSEG only: use cosine similarity to check if a voxel is matching a query embedding, instead of argmax between the query and "other"
+    lseg_cossim_threshold: 0.9        # cosine similarity threshold to admit
+    batch_size_indexing: 16384        # 2**14  batch size of the map voxels to be considered all toghether while indexing the map
+    fcclip_m2f_cos_sim_threshold: 0.22    
+    fcclip_clip_cos_sim_threshold: 0.25
+
+
+    # Costmap (for goal generation)
+    occupied_threshold: 40.0    # Value of the costpmap cell to be considered occuipied
+    costmap_goal_window: 5      # Number of costmap cells for the dilation window
+    costmap_floor_height: 0.2   # Height in meters above which we consider the voxels to be obstacles to be projected on the costmap
+    costmap_dilation: 3         # number of cells to dilate the projected voxels to the costmap
+    map_frame: "map"            # reference frame of the costmap (usually is the same of target_frame)
+
+    # Clustering DBSCAN: parameters for each category size for objects (0 : small, 1 : medium, 2: large, 3: very large)
+    dbscan.0.eps: 2.0
+    dbscan.0.min_samples: 10
+    dbscan.1.eps: 5.0
+    dbscan.1.min_samples: 80
+    dbscan.2.eps: 10.0
+    dbscan.2.min_samples: 200
+    dbscan.3.eps: 10.0
+    dbscan.3.min_samples: 300
+    dbscan.default.eps: 3.0
+    dbscan.default.min_samples: 10
+
+
+    # Debug / Visualization
+    # LSEG
+    seg_vis: false  # Enables LSEG segmentation visualization (of the lables below) on the topic
+    labels: 
+      - "screen"
+      - "photo"
+      - "laptop"
+      - "wardrobe"
+      - "table"
+      - "closet"
+      - "chair"
+      - "shelf"
+      - "door"
+      - "wall"
+      - "ceiling"
+      - "floor"
+      - "robot"
+    # FCCLIP
+    debug: false    # Save on disk the segmentation masks and the segmented images
+    debug_category_list:
+      - "chair"
+      - "table"
+      - "floor"
+      - "door"
+      - "wall"
+      - "ceiling"
+      - "box"
+      - "television"
+      - "laptop"
+      - "shelving"
+      - "person"
+      - "trash bin"
+      - "first aid kit"
+      - "mouse"
+      - "hard hat"
+      - "printer"
+      - "microwave"
+      - "backpack"
+      - "bottle"
+      - "lunch bag"
+      - "banana"
+      - "remote"
+      - "smartphone"
+      - "cup"
+      - "yogurt"
+      - "drill"
+      - "tools"
+      - "glove"
+
+    # Camera intrinsic matrix (if not using camera_info_topic)
+    cam_calib_mat: [386.0, 0.0, 321.0,
+                    0.0, 386.0, 238.0,
+                    0.0, 0.0, 1.0]
+
+    # Enable mapping at start
+    enable_mapping: true

@@ -1,0 +1,4 @@
+---
+bool is_ok
+sensor_msgs/Image rgb
+string error_msg

@@ -1,0 +1,156 @@
+import math
+
+import numpy as np
+import torch
+
+from matplotlib import pyplot as plt
+
+from visual_language_navigation.utils.visualize_utils import get_new_pallete, get_new_mask_pallete
+from visual_language_navigation.lseg.modules.models.lseg_net import LSegEncNet
+from visual_language_navigation.lseg.additional_utils.models import resize_image, pad_image, crop_image
+
+def get_lseg_feat(
+    model: LSegEncNet,
+    image: np.array,
+    labels,
+    transform,
+    device,
+    crop_size=480,
+    base_size=520,
+    norm_mean=[0.5, 0.5, 0.5],
+    norm_std=[0.5, 0.5, 0.5],
+    categories_to_skip = [],
+    vis=False
+):
+    """
+    Extracts dense visual-semantic features from an image using the LSeg (Language-Segmentation) model.
+
+    This function performs multi-scale sliding window inference to compute LSeg encoder features for a given image.
+    It supports optional visualization and can skip specific semantic categories during inference.
+
+    Parameters
+    ----------
+    model : LSegEncNet
+        A pre-trained LSeg encoder network used for feature extraction.
+    image : np.array
+        Input RGB image as a NumPy array (H, W, 3).
+    labels : list
+        List of textual category labels corresponding to semantic classes.
+    transform : list of transforms
+        Transformation function applied to the input image (e.g., normalization, tensor conversion).
+    device : torch.device
+        Device on which inference is performed (CPU or CUDA).
+    crop_size : int, optional, default=480
+        Crop size used for sliding window evaluation.
+    base_size : int, optional, default=520
+        Base size for resizing the input image before cropping.
+    norm_mean : list of float, optional, default=[0.5, 0.5, 0.5]
+        Mean values for image normalization.
+    norm_std : list of float, optional, default=[0.5, 0.5, 0.5]
+        Standard deviation values for image normalization.
+    categories_to_skip : list, optional
+        List of class indices to skip during prediction. If non-empty, prediction maps are also returned.
+    vis : bool, optional, default=False
+        If True, visualizes the segmentation mask with a new color palette and class legend.
+
+    Returns
+    -------
+    outputs : torch.Tensor
+        Dense LSeg feature map tensor of shape (1, C, H, W), where C is the feature dimension.
+    pred : np.array or None
+        2D array of predicted semantic labels (H, W), returned if `categories_to_skip` is non-empty or `vis=True`.
+        Otherwise, None.
+    img_plot : np.array, optional
+        If `vis=True`, returns the RGBA visualization of the segmentation mask as a NumPy array.
+        Otherwise, not returned.
+    """
+    get_preds = False
+    if len(categories_to_skip) > 0:
+        get_preds = True
+    image = transform(image).unsqueeze(0).to(device)
+    img = image[0].permute(1, 2, 0)
+    img = img * 0.5 + 0.5
+
+    batch, _, h, w = image.size()
+    stride_rate = 2.0 / 3.0
+    stride = int(crop_size * stride_rate)
+
+    long_size = base_size
+    if h > w:
+        height = long_size
+        width = int(1.0 * w * long_size / h + 0.5)
+        short_size = width
+    else:
+        width = long_size
+        height = int(1.0 * h * long_size / w + 0.5)
+        short_size = height
+
+    cur_img = resize_image(image, height, width, **{"mode": "bilinear", "align_corners": True})
+    if long_size <= crop_size:
+        pad_img = pad_image(cur_img, norm_mean, norm_std, crop_size)
+        print(pad_img.shape)
+        with torch.no_grad():
+            outputs, logits = model(pad_img, labels)
+        outputs = crop_image(outputs, 0, height, 0, width)
+    else:
+        if short_size < crop_size:
+            # pad if needed
+            pad_img = pad_image(cur_img, norm_mean, norm_std, crop_size)
+        else:
+            pad_img = cur_img
+        _, _, ph, pw = pad_img.shape
+        assert ph >= height and pw >= width
+        h_grids = int(math.ceil(1.0 * (ph - crop_size) / stride)) + 1
+        w_grids = int(math.ceil(1.0 * (pw - crop_size) / stride)) + 1
+        with torch.cuda.device_of(image):
+            with torch.no_grad():
+                outputs = image.new().resize_(batch, model.out_c, ph, pw).zero_().to(device)
+                if get_preds or vis:
+                    logits_outputs = image.new().resize_(batch, len(labels), ph, pw).zero_().to(device)
+            count_norm = image.new().resize_(batch, 1, ph, pw).zero_().to(device)
+        # grid evaluation
+        for idh in range(h_grids):
+            for idw in range(w_grids):
+                h0 = idh * stride
+                w0 = idw * stride
+                h1 = min(h0 + crop_size, ph)
+                w1 = min(w0 + crop_size, pw)
+                crop_img = crop_image(pad_img, h0, h1, w0, w1)
+                # pad if needed
+                pad_crop_img = pad_image(crop_img, norm_mean, norm_std, crop_size)
+                with torch.no_grad():
+                    output, logits = model(pad_crop_img, labels)
+                cropped = crop_image(output, 0, h1 - h0, 0, w1 - w0)
+                outputs[:, :, h0:h1, w0:w1] += cropped
+                if get_preds or vis:
+                    cropped_logits = crop_image(logits, 0, h1 - h0, 0, w1 - w0)
+                    logits_outputs[:, :, h0:h1, w0:w1] += cropped_logits
+                count_norm[:, :, h0:h1, w0:w1] += 1
+        assert (count_norm == 0).sum() == 0
+        outputs = outputs / count_norm
+        outputs = outputs[:, :, :height, :width]
+        if get_preds or vis:
+            logits_outputs = logits_outputs / count_norm
+            logits_outputs = logits_outputs[:, :, :height, :width]
+    if get_preds or vis:
+        predicts = [torch.max(logit, 0)[1].cpu().numpy() for logit in logits_outputs]
+        pred = predicts[0]
+        if vis:
+            new_palette = get_new_pallete(len(labels))
+            mask, patches = get_new_mask_pallete(pred, new_palette, out_label_flag=True, labels=labels)
+            seg = mask.convert("RGBA")
+            fig = plt.figure()
+            plt.imshow(seg)
+            plt.legend(handles=patches, loc="upper left", bbox_to_anchor=(1.0, 1), prop={"size": 20})
+            plt.axis("off")
+
+            plt.tight_layout()
+            plt.show()
+            fig.canvas.draw()
+            img_plot = np.array(seg)
+
+            return outputs, pred, img_plot
+
+        return outputs, pred
+
+    return outputs, None
