@@ -6,7 +6,7 @@ import sys
 import os
 import gdown
 import hashlib
-
+from pathlib import Path
 
 def sha256sum(filename: str) -> str:
     """Compute SHA256 hash of a file."""
@@ -24,9 +24,8 @@ def main() -> None:
     # Handle arguments
     dest_folder = sys.argv[1] if len(sys.argv) > 1 else ""
     if not dest_folder:
-        dest_folder = os.path.expanduser(
-            "~/visual-language-navigation/visual_language_navigation/fcclip"
-        )
+        folder = Path(__file__).resolve().parent
+        dest_folder = str(folder) + "/../visual_language_navigation/fcclip"
 
     os.makedirs(dest_folder, exist_ok=True)
     dest_path = os.path.join(dest_folder, "fcclip_cocopan.pth")

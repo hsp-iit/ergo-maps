@@ -5,7 +5,7 @@
 import sys
 import gdown
 import os
-
+from pathlib import Path
 
 def main()->None:
     url = "https://drive.google.com/u/0/uc?id=1ayk6NXURI_vIPlym16f_RG3ffxBWHxvb"
@@ -14,7 +14,8 @@ def main()->None:
     except Exception:
         dest_folder=""
     if dest_folder == "" or dest_folder == None:
-        dest_folder = os.path.expanduser('~') + "/visual-language-navigation/visual_language_navigation/lseg/checkpoints"
+        folder = Path(__file__).resolve().parent
+        dest_folder = str(folder) + "/../visual_language_navigation/lseg/checkpoints"
 
     dest_path = dest_folder + "/demo_e200.ckpt"
     if not os.path.isfile(dest_path):

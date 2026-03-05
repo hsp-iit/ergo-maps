@@ -66,7 +66,7 @@ def _init_fcclip():
     args = get_parser()
     
     args.opts = ["MODEL.WEIGHTS", "visual_language_navigation/fcclip/fcclip_cocopan.pth", "MODEL.DEVICE", "cuda"]
-    args.config_file = "visual_language_navigation/fcclip/configs/coco/panoptic-segmentation/fcclip/fcclip_convnext_large_eval_ade20k.yaml"
+    args.config_file = "/home/user1/ergo-maps/visual_language_navigation/fcclip/configs/coco/panoptic-segmentation/fcclip/fcclip_convnext_large_eval_ade20k.yaml"
 
     cfg = setup_cfg(args)
 

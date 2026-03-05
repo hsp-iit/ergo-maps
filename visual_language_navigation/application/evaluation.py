@@ -351,7 +351,7 @@ def compute_acc05(gt_hull_list, polygons):
 def main():
     rclpy.init()
     # Open sheet file
-    file_path = "/home/user1/visual-language-navigation/application/eval_gt/Lseg_Ground_Truth_Annotations_Maps.ods"
+    file_path = "/home/user1/ergo-maps/application/eval_gt/Lseg_Ground_Truth_Annotations_Maps.ods"
     maps = read_ods_blocks_flattened(file_path)
     map_list = []
     for item in maps:

@@ -52,7 +52,7 @@ class LLMWrapper(Node):
                 ('show_index_map_service', "semantic_map_server/index_map"),
                 ('agent_chat_service', "agent_comm"),
                 ('use_remote_pose', True),
-                ('config_path', '/home/user1/visual-language-navigation/config.env'),
+                ('config_path', '/home/user1/ergo-maps/config.env'),
                 ('goal_pub_service', 'pub_goal'),
                 ('refresh_conversation', True),
                 ('use_chatGPT', True),

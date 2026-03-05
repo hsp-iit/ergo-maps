@@ -18,8 +18,8 @@ and expected to return a `nn.Module` object.
 def main() -> None:
     args = get_parser()
     
-    args.opts = ["MODEL.WEIGHTS", "/home/user1/visual-language-navigation/visual_language_navigation/fcclip/fcclip_cocopan.pth", "MODEL.DEVICE", "cpu"]
-    args.config_file = "/home/user1/visual-language-navigation/visual_language_navigation/fcclip/configs/coco/panoptic-segmentation/fcclip/fcclip_convnext_large_eval_ade20k.yaml"
+    args.opts = ["MODEL.WEIGHTS", "/home/user1/ergo-maps/visual_language_navigation/fcclip/fcclip_cocopan.pth", "MODEL.DEVICE", "cpu"]
+    args.config_file = "/home/user1/ergo-maps/visual_language_navigation/fcclip/configs/coco/panoptic-segmentation/fcclip/fcclip_convnext_large_eval_ade20k.yaml"
     cfg = setup_cfg(args)
     model = build_model(cfg)
     

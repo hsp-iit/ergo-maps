@@ -63,17 +63,16 @@ RUN code --install-extension ms-vscode.cpptools \
 # Git Setup
 ARG GIT_USERNAME
 ARG GIT_USER_EMAIL
-ARG GIT_TOKEN
 RUN git config --global user.name ${GIT_USERNAME} && git config --global user.email ${GIT_USER_EMAIL}
-# Installing visual-language-navigation
-RUN git clone https://${GIT_TOKEN}@github.com/hsp-iit/visual-language-navigation
+# Installing ergo-maps
+RUN git clone https://github.com/hsp-iit/ergo-maps
 RUN sudo apt update && sudo apt install -y python3-pip
 # Manually install requirements
 RUN pip3 install hydra-core gdown openai-clip torch torchvision h5py timm pyvisgraph pytorch_lightning odfpy --break-system-packages
-RUN echo "export PYTHONPATH=$PYTHONPATH:/home/${USER}/visual-language-navigation" >> /home/${USER}/.bashrc
+RUN echo "export PYTHONPATH=$PYTHONPATH:/home/${USER}/ergo-maps" >> /home/${USER}/.bashrc
 RUN pip3 install opencv-python matplotlib open3d "numpy >= 2" --break-system-packages
 # Env Setup
-ENV PYTHONPATH=$"${PYTHONPATH}:/home/${USER}/visual-language-navigation"
+ENV PYTHONPATH=$"${PYTHONPATH}:/home/${USER}/ergo-maps"
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /home/${USER}/.bashrc
 
 # Clip backbone
@@ -81,15 +80,15 @@ RUN wget https://openaipublic.azureedge.net/clip/models/40d365715913c9da98579312
     mkdir ~/.cache/clip && mv ViT-B-32.pt ~/.cache/clip/ViT-B-32.pt
 
 # Ros2 interfaces and checkpoints setup
-RUN cd visual-language-navigation && git pull && cd visual_language_navigation/lseg && mkdir checkpoints && cd && \
-    cd visual-language-navigation/ros2_vlmaps_interfaces && source /opt/ros/${ROS_DISTRO}/setup.bash && colcon build --symlink-install --cmake-args -DCMAKE_CXX_FLAGS=-w && \
-    echo "source /home/${USER}/visual-language-navigation/ros2_vlmaps_interfaces/install/local_setup.bash" >> /home/${USER}/.bashrc
+RUN cd ergo-maps && git pull && cd visual_language_navigation/lseg && mkdir checkpoints && cd && \
+    cd ergo-maps && source /opt/ros/${ROS_DISTRO}/setup.bash && \
+    colcon build --symlink-install --cmake-args -DCMAKE_CXX_FLAGS=-w && \
+    echo "source /home/${USER}/ergo-maps/install/local_setup.bash" >> /home/${USER}/.bashrc
 # Set LSeg checkpoints
-RUN cd visual-language-navigation/docker && python3 download_checkpoint.py
+RUN cd ergo-maps/docker && python3 download_checkpoint.py
 # Hugging Face Model
-RUN cd visual-language-navigation/docker && python3 download_hf_model.py
-RUN python3 download_hf_model.py
-RUN pip3 install transformers openai flask_socketio --break-system-packages
+RUN cd ergo-maps/docker && python3 download_hf_model.py
+RUN pip3 install "transformers<5" openai flask_socketio --break-system-packages
 RUN mkdir ~/.cache/huggingface/transformers && \
     cd ~/.cache/huggingface/transformers && \
     wget https://huggingface.co/openai/clip-vit-base-patch32/resolve/main/pytorch_model.bin && \
@@ -104,17 +103,17 @@ RUN mkdir ~/.cache/huggingface/transformers && \
 # Detectron2 requirement
 RUN pip3 install 'git+https://github.com/facebookresearch/detectron2.git' --break-system-packages
 # FC-CLIP requirements
-RUN cd visual-language-navigation/visual_language_navigation/fcclip && \
+RUN cd ergo-maps/visual_language_navigation/fcclip && \
     pip3 install -r requirements.txt --break-system-packages
 # Build CUDA kernel for MSDeformAttn
 ENV TORCH_CUDA_ARCH_LIST="8.6"
 ENV FORCE_CUDA="1"
-RUN cd visual-language-navigation/visual_language_navigation/fcclip/fcclip/modeling/pixel_decoder/ops && \
+RUN cd ergo-maps/visual_language_navigation/fcclip/fcclip/modeling/pixel_decoder/ops && \
     pip3 install . --user --break-system-packages
 # FCCLIP weights and configs
-RUN cd visual-language-navigation/docker && export FORCE_CUDA="1" && export TORCH_CUDA_ARCH_LIST="8.6" && \
+RUN cd ergo-maps/docker && export FORCE_CUDA="1" && export TORCH_CUDA_ARCH_LIST="8.6" && \
     python3 download_fcclip_clip_weights.py
-RUN cd visual-language-navigation/docker && \
+RUN cd ergo-maps/docker && \
     python3 download_cocopan_checkpoint.py
 
 # Cleanup

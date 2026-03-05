@@ -41,7 +41,7 @@ class LLMChatter(Node):
             parameters=[
                 ('agent_comm_service', "agent_comm"),
                 ('user_chat_service', "chat_agent/user_text"),
-                ('config_path', '/home/user1/visual-language-navigation/config.env'),
+                ('config_path', '/home/user1/ergo-maps/config.env'),
                 ('refresh_conversation', True), # With images it's likely to go over maximum context lenght
                 ('image_srv_name', 'vlmap_builder/robot_camera_rgb'),
                 ('robot_name', 'ergoCub'),

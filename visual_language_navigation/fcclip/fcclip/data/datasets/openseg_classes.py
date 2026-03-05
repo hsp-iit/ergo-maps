@@ -2339,10 +2339,12 @@ COCO_STUFF_CATEGORIES = [
     {"id": 182, "name": "wood", "supercategory": "solid"},
 ]
 
+from pathlib import Path
 
 def get_coco_categories_with_prompt_eng():
     COCO_CATEGORIES_ = copy.deepcopy(COCO_CATEGORIES)
-    coco_id_names = open('visual_language_navigation/fcclip/fcclip/data/datasets/coco_panoptic_with_prompt_eng.txt').read().splitlines()
+    path = Path(__file__).parent
+    coco_id_names = open(path / 'coco_panoptic_with_prompt_eng.txt').read().splitlines()
     coco_idx = 0
     for line in coco_id_names:
         idx, name = line.split(':')

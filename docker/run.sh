@@ -9,7 +9,6 @@ sudo docker run \
      --rm \
      --gpus all \
      -e DISPLAY=unix${DISPLAY} \
-     -e ROS_DOMAIN_ID=${ROS_DOMAIN_ID} \
      --device /dev/dri/card0:/dev/dri/card0 \
      -v /tmp/.X11-unix:/tmp/.X11-unix \
      ${NAME}:${TAG} bash
