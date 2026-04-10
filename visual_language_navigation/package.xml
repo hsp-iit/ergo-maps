@@ -4,7 +4,7 @@
   <name>visual_language_navigation</name>
   <version>1.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="simone_micheletti@outlook.it">user1</maintainer>
+  <maintainer email="todo@outlook.it">user1</maintainer>
   <license>BSD 3-Clause License</license>
 
   <buildtool_depend>ament_python</buildtool_depend>
