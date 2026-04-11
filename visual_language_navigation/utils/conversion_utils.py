@@ -1,6 +1,6 @@
-# SPDX-FileCopyrightText: 2024 Humanoid Sensing and Perception, Istituto Italiano di Tecnologia
+# SPDX-FileCopyrightText: 2024
 # SPDX-License-Identifier: BSD-3-Clause
-# Author: Simone Micheletti
+ 
 
 import numpy as np
 import math

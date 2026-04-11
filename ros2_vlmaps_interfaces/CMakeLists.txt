@@ -1,6 +1,6 @@
-# SPDX-FileCopyrightText: 2024 Humanoid Sensing and Perception, Istituto Italiano di Tecnologia
+# SPDX-FileCopyrightText: 2024
 # SPDX-License-Identifier: BSD-3-Clause
-# Author: Simone Micheletti
+
 
 cmake_minimum_required(VERSION 3.8)
 set (CMAKE_CXX_STANDARD 17)

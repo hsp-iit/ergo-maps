@@ -1,6 +1,6 @@
-# SPDX-FileCopyrightText: 2024 Humanoid Sensing and Perception, Istituto Italiano di Tecnologia
+# SPDX-FileCopyrightText: 2024
 # SPDX-License-Identifier: BSD-3-Clause
-# Author: Leonardo Gori
+# Author: 
 
 import numpy as np
 from visual_language_navigation.utils.clip_utils import get_text_feats, multiple_templates

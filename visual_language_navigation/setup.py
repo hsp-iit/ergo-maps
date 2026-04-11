@@ -26,8 +26,8 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='Simone Micheletti',
-    maintainer_email='simone_micheletti@outlook.it',
+    maintainer='',
+    maintainer_email='',
     description='TODO: Package description',
     license='BSD 3-Clause License',
     extras_require={

@@ -1,6 +1,6 @@
-# SPDX-FileCopyrightText: 2024 Humanoid Sensing and Perception, Istituto Italiano di Tecnologia
+# SPDX-FileCopyrightText: 2024 
 # SPDX-License-Identifier: BSD-3-Clause
-# Author: Simone Micheletti
+# Author: 
 
 # This should be used only for rosbags taken with R1 when extra_camera_tf is not present
 

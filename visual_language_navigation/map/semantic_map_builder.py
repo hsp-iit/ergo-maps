@@ -1,6 +1,6 @@
-# SPDX-FileCopyrightText: 2024 Humanoid Sensing and Perception, Istituto Italiano di Tecnologia
+# SPDX-FileCopyrightText: 2024
 # SPDX-License-Identifier: BSD-3-Clause
-# Author: Simone Micheletti
+ 
 
 import os
 from pathlib import Path
@@ -52,11 +52,11 @@ class SemanticMapBuilder(Node):
         self.declare_parameters(
             namespace='',
             parameters=[
-                ('img_topic_name', "/camera/rgbd/img"),         # ergocub: /camera/rgbd/img
-                ('depth_topic_name', "/camera/rgbd/depth"),     # ergocub: /camera/rgbd/depth
+                ('img_topic_name', "/camera/rgbd/img"),
+                ('depth_topic_name', "/camera/rgbd/depth"),
                 ('amcl_pose_topic', "/amcl_pose"),
                 ('use_camera_info_topic', True),
-                ('camera_info_topic', "/camera/rgbd/camera_info"),   # ergocub: /camera/rgbd/camera_info
+                ('camera_info_topic', "/camera/rgbd/camera_info"),
                 ('cam_calib_mat', [386.0, 0.0, 321.0, 0.0, 386.0, 238.0, 0.0, 0.0, 1.0]),
                 ('maximum_height', 2.3),
                 ('cell_size', 0.02),        #0.05
@@ -82,7 +82,7 @@ class SemanticMapBuilder(Node):
                 ('lseg_use_cosine_sim', True),
                 ('lseg_cossim_threshold', 0.9),
                 ('camera_reference_frame', "realsense_compensated"),  # Reference frame of the camera, if empty will use the one from the ros message
-                ('robot_base_frame','geometric_unicycle'),  # mobile_base_body_link for R1, geometric_unicycle for ergoCub
+                ('robot_base_frame','geometric_unicycle'),  # mobile_base_body_link for XX, geometric_unicycle for robot
                 ('classes_to_skip', ["person", "floor", "ceiling", "wall"]),
                 ('labels', [
                             "screen"

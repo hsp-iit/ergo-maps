@@ -1,6 +1,6 @@
-# SPDX-FileCopyrightText: 2024 Humanoid Sensing and Perception, Istituto Italiano di Tecnologia
+# SPDX-FileCopyrightText: 2024
 # SPDX-License-Identifier: BSD-3-Clause
-# Author: Simone Micheletti
+ 
 
 import sys
 import rclpy
@@ -56,7 +56,7 @@ class SemanticMapServer(Node):
                 ('costmap_dilation', 3),
                 ('lseg_cossim_threshold', 0.9),
                 ('lseg_use_cosine_sim', True),
-                ('robot_base_frame','geometric_unicycle'),  # mobile_base_body_link for R1, geometric_unicycle for ergoCub
+                ('robot_base_frame','geometric_unicycle'),  # mobile_base_body_link for R1, geometric_unicycle for robot
                 ('seg_model_name', "fcclip"),       # fcclip or lseg
                 ('labels', ["other"
                             ,"screen"

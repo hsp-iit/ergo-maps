@@ -1,6 +1,6 @@
-# SPDX-FileCopyrightText: 2024 Humanoid Sensing and Perception, Istituto Italiano di Tecnologia
+# SPDX-FileCopyrightText: 2024
 # SPDX-License-Identifier: BSD-3-Clause
-# Author: Simone Micheletti
+ 
 
 from visual_language_navigation.utils.fcclip_utils import get_parser, setup_cfg
 from detectron2.utils.registry import Registry

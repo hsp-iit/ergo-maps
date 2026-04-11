@@ -1,6 +1,6 @@
-# SPDX-FileCopyrightText: 2024 Humanoid Sensing and Perception, Istituto Italiano di Tecnologia
+# SPDX-FileCopyrightText: 2024
 # SPDX-License-Identifier: BSD-3-Clause
-# Author: Simone Micheletti
+
 
 import rclpy
 import rclpy.duration
@@ -58,7 +58,7 @@ class LLMWrapper(Node):
                 ('use_chatGPT', True),
                 ('model_name', "hsp-Vocalinteraction_gpt4o"),
                 ('robot_base_link', "geometric_unicycle"),
-                ('robot_name', "ergoCub")
+                ('robot_name', "robot")
             ])
         openai_config = load_config(self.get_parameter('config_path').value)
         map_service_name = self.get_parameter('map_query_service').value

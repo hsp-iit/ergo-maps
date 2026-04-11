@@ -25,7 +25,7 @@ semantic_map_builder:
     # Frames
     target_frame: "map"           # global frame name of the map in the navigation stack. It's the reference frame where to express the map.
     semantic_map_frame: "vlmap"   # semantic map frame name: used to convert between the semantic map grid to the global navigation map
-    robot_base_frame: "geometric_unicycle"   # base frame of the robot: mobile_base_body_link for R1, geometric_unicycle for ergoCub
+    robot_base_frame: "geometric_unicycle"   # base frame of the robot: mobile_base_body_link for R1, geometric_unicycle for robot
 
 
     # Raycasting parameters

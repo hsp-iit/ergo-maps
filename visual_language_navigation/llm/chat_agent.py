@@ -1,6 +1,6 @@
-# SPDX-FileCopyrightText: 2024 Humanoid Sensing and Perception, Istituto Italiano di Tecnologia
+# SPDX-FileCopyrightText: 2024
 # SPDX-License-Identifier: BSD-3-Clause
-# Author: Simone Micheletti
+ 
 
 import rclpy
 import rclpy.duration
@@ -44,7 +44,7 @@ class LLMChatter(Node):
                 ('config_path', '/home/user1/ergo-maps/config.env'),
                 ('refresh_conversation', True), # With images it's likely to go over maximum context lenght
                 ('image_srv_name', 'vlmap_builder/robot_camera_rgb'),
-                ('robot_name', 'ergoCub'),
+                ('robot_name', 'robot'),
                 ('use_camera', False)
             ])
         openai_config = load_config(self.get_parameter('config_path').value)
@@ -137,12 +137,11 @@ class LLMChatter(Node):
             - When asked about what you see, you have to reason on the image provided by the tool.
             - For any other situation you can answer freely based on your BACKGROUND.
         
-        BACKGROUND: 'your robot name is {self.robot_name}, and your history is explained in this web page: https://icub.iit.it/it/products/r1-robot . Other technical information are on https://www.iit.it/documents/175012/528824/Technical_Specification_R1_20200531.pdf/89e31921-f77f-96ea-b196-d89b35aba5b8?t=1623827610944 
-        If you are asked anything about yourself, you have to take informations from the web page and tell to the user. Never tell the page URL.'
+        BACKGROUND: 'your robot name is {self.robot_name}.'
 
         """
-        #More informations on the project are on this link: https://ergocub.eu/project .
-        #Scientific pubblications: https://ergocub.eu/publications . People involved: https://ergocub.eu/partners . Wearable Technology: https://ergocub.eu/wearables .
+        #More information on the project is available in internal documentation.
+        #Scientific publications and partners are referenced in internal documentation.
         
         
         # The conversation flow contains the initial prompt and the conversation between the user and LLM

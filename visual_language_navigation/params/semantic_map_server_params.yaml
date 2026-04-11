@@ -17,7 +17,7 @@ semantic_map_server:
     costmap_goal_window: 5
     costmap_floor_height: 0.2
     costmap_dilation: 3
-    cossim_threshold: 0.92 #0.9    #0.85 ergocub
+    cossim_threshold: 0.92 #0.9
     use_cosine_sim: True
     color_palette_size: 4
     seg_model_name: fcclip  # fcclip or lseg (default)
